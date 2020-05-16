@@ -25,7 +25,6 @@ class SF {
             root = document.querySelector('[sf]');
         root.__isRoot = true;
         let app = this.asSF(root);
-        app.templates = SF.templates;
         app.newTemplate = function (templateName, htmlMaker) {
             let template = ((htmlMaker) => new Proxy(SF.__placeholder, {
                 apply: function (target, thisArg, argumentsList) {
@@ -37,7 +36,7 @@ class SF {
                     return node;
                 }
             }))(htmlMaker);
-            this.templates[templateName] = template;
+            SF.__templates[templateName] = template;
             return template;
         }
         app.asTemplate = function (templateName, element) {
@@ -47,11 +46,11 @@ class SF {
     }
     static asSF(element) {
         if (!element) return element;
-        if (element.__key && SF.map[element.__key])
-            return SF.map[element.__key];
+        if (element.__key && SF.__map[element.__key])
+            return SF.__map[element.__key];
         else
             element.__key = `${new Date().getTime()}__${Math.random()}`.replace('.', '').hashCode();
-        SF.map[element.__key] = new Proxy(element, {
+        SF.__map[element.__key] = new Proxy(element, {
             set(o, prop, value) {
                 if (o.hasAttribute(prop))
                     return o.setAttribute(prop, value);
@@ -86,7 +85,7 @@ class SF {
                 return SF.asSFarr(o.querySelectorAll(prop));
             }
         });
-        return SF.map[element.__key];
+        return SF.__map[element.__key];
     }
     static asSFarr(elements) {
         let arr = [];
@@ -97,6 +96,6 @@ class SF {
         return arr.length == 1? arr[0] : arr;
     }
 }
-SF.map = SF.map || new Map();
-SF.templates = SF.templates || new Map();
+SF.__map = SF.__map || new Map();
+SF.__templates = SF.__templates || new Map();
 SF.__placeholder = SF.__placeholder || function () { };
