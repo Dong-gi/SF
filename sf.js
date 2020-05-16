@@ -54,10 +54,9 @@ class SF {
             set(o, prop, value) {
                 if (o.hasAttribute(prop))
                     return o.setAttribute(prop, value);
-                else if (o.hasOwnProperty(prop))
+                if (o.hasOwnProperty(prop))
                     return o[prop] = value;
-                else
-                    return o[prop] = value;
+                return o[prop] = value;
             },
             get(o, prop) {
                 switch (prop) {
@@ -70,16 +69,17 @@ class SF {
                     case 'text':
                         return SF.asSFarr(Array.from(o.childNodes).filter(x => x.nodeName == '#text'))
                 }
+                if (prop.startsWith('$'))
+                    return SF.asSFarr(o.querySelectorAll(prop.substr(1)));
                 if (o.hasAttribute(prop))
                     return o.getAttribute(prop);
-                else if (o.hasOwnProperty(prop))
+                if (o.hasOwnProperty(prop))
                     return o[prop];
-                else if (o[prop] != undefined && o[prop] != null)
+                if (o[prop] != undefined && o[prop] != null)
                     return o[prop];
-                else if (o.hasAttribute('sf') && document.getElementById(prop))
+                if (o.hasAttribute('sf') && document.getElementById(prop))
                     return SF.asSF(document.getElementById(prop));
-                else
-                    return SF.asSFarr(o.querySelectorAll(prop));
+                return SF.asSFarr(o.querySelectorAll(prop));
             }
         });
         return SF.map[element.__key];
@@ -90,7 +90,7 @@ class SF {
         for (let e of elements) {
             arr.push(SF.asSF(e));
         }
-        return arr;
+        return arr.length == 1? arr[0] : arr;
     }
 }
 SF.map = SF.map || new Map();
