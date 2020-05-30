@@ -108,6 +108,8 @@ class SF {
                     case '#text':
                         return SF.asSFarr(Array.from(o.childNodes).filter(x => x.nodeName == '#text'))
                 }
+                if (prop.startsWith('$'))
+                    return SF.asSFarr(o.querySelectorAll(prop.substr(1)));
                 if (o.hasAttribute && o.hasAttribute(prop))
                     return o.getAttribute(prop);
                 if (o.hasOwnProperty(prop))
