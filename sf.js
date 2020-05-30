@@ -70,7 +70,7 @@ class SF {
             return SF[SFKey.map][element[SFKey.key]];
         else
             element[SFKey.key] = `${new Date().getTime()}__${Math.random()}`.replace('.', '').hashCode();
-        SF[SFKey.map][element[SFKey.key]] = new Proxy(element, {
+        let result = new Proxy(element, {
             set(o, prop, value) {
                 if (typeof (prop) != 'string')
                     return (o[prop] = value) || true;
@@ -143,11 +143,12 @@ class SF {
                 return true;
             }
         });
-        SF[SFKey.map][element[SFKey.key]][SFKey.beforeSetHooks] = [];
-        SF[SFKey.map][element[SFKey.key]][SFKey.afterSetHooks] = [];
-        SF[SFKey.map][element[SFKey.key]][SFKey.beforeDelHooks] = [];
-        SF[SFKey.map][element[SFKey.key]][SFKey.afterDelHooks] = [];
-        return SF[SFKey.map][element[SFKey.key]];
+        SF[SFKey.map][element[SFKey.key]] = result;
+        result[SFKey.beforeSetHooks] = [];
+        result[SFKey.afterSetHooks] = [];
+        result[SFKey.beforeDelHooks] = [];
+        result[SFKey.afterDelHooks] = [];
+        return result;
     }
     /**
      * @param {Iterable<HTMLElement>} elements
@@ -403,6 +404,16 @@ Object.freeze(SF);
 
 class HookAction {
     constructor(prop, callback) {
-        [this.prop, this.callback] = [prop, callback];
+        this.active = new Set();
+        this.counter = 0;
+        this.prop = prop;
+        this.callback = ((cb) => function () {
+            if (this.active.size == 0) {
+                let mine;
+                this.active.add(mine = this.counter++);
+                cb(...arguments);
+                this.active.delete(mine);
+            }
+        })(callback);
     }
 }
