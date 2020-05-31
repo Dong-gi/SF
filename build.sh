@@ -1,2 +1,2 @@
-# using uglify-js-es6
-uglifyjs sf.js -o sf.min.js -c -m
+# using terser
+terser --compress --mangle -o sf.min.js -- sf.js
