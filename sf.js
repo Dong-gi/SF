@@ -327,7 +327,7 @@ class SF {
                 obj[element.name] = Array.from(element.files)
             else if (element.type && element.type.toLowerCase() == 'radio') {
                 if (name) {
-                    let checkedElement = form.querySelector(`input[name=${name}][type=radio]:not([disabled]):checked`)
+                    let checkedElement = form.querySelector(`input[name="${name}"][type=radio]:not([disabled]):checked`)
                     obj[element.name] = (!checkedElement) || checkedElement.value
                 } else
                     obj[element.name] = element.checked
@@ -340,7 +340,7 @@ class SF {
         }
         let r = {}
         if (name) {
-            innerFormToObject(form.querySelector(`[name=${name}]`), r)
+            innerFormToObject(form.querySelector(`[name="${name}"]`), r)
         } else {
             let qInput = 'input[name]:not([disabled]):not([type=radio]):not([type=checkbox])'
             let qRadio = 'input[name][type=radio]:not([disabled]):checked'
@@ -360,14 +360,14 @@ class SF {
      */
     static jsonToForm(form, json, name) {
         function innerToForm(form, obj, name) {
-            let target = form.querySelector(`[name=${name}]`)
+            let target = form.querySelector(`[name="${name}"]`)
             if (!target) return
             switch (target.tagName) {
                 case 'INPUT':
                     switch ((target.type || '').toLowerCase()) {
                         case 'file': return
                         case 'radio':
-                            target = form.querySelector(`[name=${name}][value=${json[name]}]`)
+                            target = form.querySelector(`[name="${name}"][value="${json[name]}"]`)
                             return target && (target.checked = Boolean(json[name]))
                         case 'checkbox':
                             return target.checked = Boolean(json[name])
@@ -381,9 +381,9 @@ class SF {
                         option.selected = false
                     if (Array.isArray(obj[name])) {
                         for (let value of obj[name])
-                            target.querySelector(`option[value=${value}]`).selected = true
+                            target.querySelector(`option[value="${value}"]`).selected = true
                     } else if (obj[name]) {
-                        target.querySelector(`option[value=${obj[name]}]`).selected = Boolean(obj[name])
+                        target.querySelector(`option[value="${obj[name]}"]`).selected = Boolean(obj[name])
                     }
                     return
             }
@@ -778,7 +778,7 @@ class SFUtil {
      * 3. The sign has a currency sign ahead; 부호 앞에 화폐 기호 [$¥£₡₱€₩₭฿]가 존재
      */
     static compareString(str1, str2) {
-        if (str1 === str2)
+        if (str1 == str2)
             return 0
         let [ori1, ori2] = [str1, str2]
         while (true) {
@@ -815,7 +815,7 @@ class SFUtil {
      * @returns {Function} Debounced function
      */
     static debounce(f, t, opt) {
-        opt = opt || {}
+        opt = opt || {lastCall: Date.now()}
         return function (args) {
             let previousCall = opt.lastCall
             opt.lastCall = Date.now()
@@ -871,12 +871,13 @@ class SFUtil {
      * @returns {Function} Throttled function
      */
     static throttle(f, t, opt) {
-        opt = opt || {}
+        opt = opt || {lastCall: Date.now()}
         return function (args) {
             let previousCall = opt.lastCall
-            opt.lastCall = Date.now()
-            if (!previousCall || (!!opt && !!opt.fast) || (opt.lastCall - previousCall) > t) {
+            let now = Date.now()
+            if (!previousCall || (!!opt && !!opt.fast) || (now - previousCall) > t) {
                 f(args)
+                opt.lastCall = now
             }
         }
     }
@@ -1058,14 +1059,12 @@ td.sorting-table-head-white:after,th.sorting-table-head-white:after{content:attr
                 if (mutation.type !== 'childList') return
 
                 for (let table of mutation.target.querySelectorAll('table')) {
+                    table.classList.add('w3-table-all', 'w3-card', 'w3-small')
                     if (table.rows.length < 3) {
                         table.classList.remove('ordered-table')
                         continue
                     }
                     if (table.classList.contains('ordered-table'))
-                        continue
-                    table.classList.add('w3-table-all', 'w3-card', 'w3-small')
-                    if (table.rows.length < 2)
                         continue
                     table.classList.add('ordered-table')
                     if (table.classList.contains('no-sort'))
@@ -1139,6 +1138,14 @@ td.sorting-table-head-white:after,th.sorting-table-head-white:after{content:attr
         document.body.append(a)
         a.click()
         a.remove()
+    }
+    static isElementInViewport (element) {
+        element = element.$ || element
+        let rect = element.getBoundingClientRect()
+        return  rect.top >= 0 &&
+                rect.left >= 0 &&
+                rect.bottom <= (window.innerHeight || document.documentElement.clientHeight) &&
+                rect.right <= (window.innerWidth || document.documentElement.clientWidth)
     }
     /**
      * Open a link via anchor tag with specific url and target
